@@ -30,6 +30,16 @@ jobs:
       - name: Build Core + Android + Desktop
         run: ./gradlew build --no-daemon
 
+      - name: Upload Android AAR Artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kdownloader-android-aars
+          path: |
+            kdownloader-android/build/outputs/aar/*.aar
+            kdownloader-compose/build/outputs/aar/*.aar
+            kdownloader-hilt/build/outputs/aar/*.aar
+
   # ─── iOS Framework (macOS only) ───
   build-ios:
     runs-on: macos-latest

@@ -67,11 +67,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
-
-skie {
-    features {
-        group {
-            coroutines()
-        }
-    }
-}

@@ -56,10 +56,10 @@ kotlin {
 
 android {
     namespace = "com.roxybasicneedbot.kdownloader.core"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = libs.versions.compilesdk.get().toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk = libs.versions.minsdk.get().toInt()
     }
 
     compileOptions {

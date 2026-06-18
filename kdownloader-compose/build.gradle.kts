@@ -5,10 +5,10 @@ plugins {
 
 android {
     namespace = "com.roxybasicneedbot.kdownloader.compose"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk = libs.versions.compilesdk.get().toInt()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk = libs.versions.minsdk.get().toInt()
     }
 
     buildFeatures {
@@ -16,7 +16,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.8" // Wait, we can useCompose compiler version that matches Kotlin 2.1.0 or use the Kotlin Compose Gradle plugin. 
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
 
     compileOptions {
@@ -24,8 +24,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 

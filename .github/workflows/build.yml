@@ -25,8 +25,5 @@ jobs:
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Compile Kotlin Code
-        run: ./gradlew compileKotlin --no-daemon
-
       - name: Build and Compile All Variants (Debug & Release)
         run: ./gradlew assembleDebug assembleRelease --no-daemon

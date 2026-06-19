@@ -24,9 +24,9 @@ rootProject.name = "KDownloader"
 
 include(":kdownloader-core")
 include(":kdownloader-android")
-include(":kdownloader-desktop")
+// include(":kdownloader-desktop")
 include(":kdownloader-hilt")
 include(":kdownloader-compose")
-include(":kdownloader-dotnet-native")
+// include(":kdownloader-dotnet-native")
 
-project(":kdownloader-dotnet-native").projectDir = file("kdownloader-dotnet/native")
+// project(":kdownloader-dotnet-native").projectDir = file("kdownloader-dotnet/native")

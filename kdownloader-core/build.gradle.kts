@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.skie)
+    // alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -12,12 +12,11 @@ kotlin {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
-    
-    jvm()
+    // jvm()
 
-    iosArm64()
-    iosSimulatorArm64()
-    iosX64()
+    // iosArm64()
+    // iosSimulatorArm64()
+    // iosX64()
 
     sourceSets {
         val commonMain by getting {
@@ -42,17 +41,17 @@ kotlin {
             }
         }
 
-        val jvmMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.cio)
-            }
-        }
-
-        val iosMain by getting {
-            dependencies {
-                implementation(libs.ktor.client.darwin)
-            }
-        }
+//        val jvmMain by getting {
+//            dependencies {
+//                implementation(libs.ktor.client.cio)
+//            }
+//        }
+//
+//        val iosMain by getting {
+//            dependencies {
+//                implementation(libs.ktor.client.darwin)
+//            }
+//        }
     }
 }
 

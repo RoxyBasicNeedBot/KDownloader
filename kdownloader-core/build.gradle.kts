@@ -14,9 +14,9 @@ kotlin {
     }
     // jvm()
 
-    // iosArm64()
-    // iosSimulatorArm64()
-    // iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
 
     sourceSets {
         val commonMain by getting {
@@ -46,12 +46,12 @@ kotlin {
 //                implementation(libs.ktor.client.cio)
 //            }
 //        }
-//
-//        val iosMain by getting {
-//            dependencies {
-//                implementation(libs.ktor.client.darwin)
-//            }
-//        }
+
+        val iosMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+        }
     }
 }
 

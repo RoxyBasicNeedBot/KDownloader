@@ -27,6 +27,9 @@ include(":kdownloader-android")
 include(":kdownloader-desktop")
 include(":kdownloader-hilt")
 include(":kdownloader-compose")
+// include(":kdownloader-flutter")
 // include(":kdownloader-dotnet-native")
+
+// project(":kdownloader-flutter").projectDir = file("kdownloader-flutter/android")
 
 // project(":kdownloader-dotnet-native").projectDir = file("kdownloader-dotnet/native")

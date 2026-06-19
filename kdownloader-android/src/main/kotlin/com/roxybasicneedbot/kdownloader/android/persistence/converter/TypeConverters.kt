@@ -6,7 +6,7 @@ import com.roxybasicneedbot.kdownloader.android.persistence.entity.MirrorUrlsWra
 import org.json.JSONArray
 import org.json.JSONObject
 
-object TypeConverters {
+class TypeConverters {
     @TypeConverter
     fun fromHeadersWrapper(wrapper: HeadersWrapper?): String {
         if (wrapper == null) return "{}"

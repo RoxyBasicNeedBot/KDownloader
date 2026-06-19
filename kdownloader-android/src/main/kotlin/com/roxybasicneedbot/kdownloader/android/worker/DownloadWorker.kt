@@ -184,13 +184,14 @@ private fun DownloadTaskEntity.toDownloadRequest(): DownloadRequest {
         fileName = fileName,
         priority = priority,
         chunkCount = chunkCount,
-        headers = headers,
+        headers = headers.map,
         wifiOnly = wifiOnly,
         speedLimit = speedLimit,
-        mirrorUrls = mirrorUrls,
+        mirrorUrls = mirrorUrls.list,
         hashAlgorithm = hashAlgorithm,
         expectedHash = expectedHash,
         scheduleAt = scheduleAt,
         groupTag = groupTag
     )
 }
+

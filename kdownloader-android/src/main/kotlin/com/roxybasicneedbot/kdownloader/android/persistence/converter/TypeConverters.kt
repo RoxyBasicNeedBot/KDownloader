@@ -3,23 +3,25 @@ package com.roxybasicneedbot.kdownloader.android.persistence.converter
 import androidx.room.TypeConverter
 import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 import com.roxybasicneedbot.kdownloader.core.model.ChunkStatus
+import com.roxybasicneedbot.kdownloader.android.persistence.entity.HeadersWrapper
+import com.roxybasicneedbot.kdownloader.android.persistence.entity.MirrorUrlsWrapper
 import org.json.JSONArray
 import org.json.JSONObject
 
-class TypeConverters {
+object TypeConverters {
     @TypeConverter
-    fun fromStringMap(map: Map<String, String>?): String {
-        if (map == null) return "{}"
+    fun fromHeadersWrapper(wrapper: HeadersWrapper?): String {
+        if (wrapper == null) return "{}"
         val json = JSONObject()
-        map.forEach { (key, value) ->
+        wrapper.map.forEach { (key, value) ->
             json.put(key, value)
         }
         return json.toString()
     }
 
     @TypeConverter
-    fun toStringMap(value: String?): Map<String, String> {
-        if (value.isNullOrEmpty()) return emptyMap()
+    fun toHeadersWrapper(value: String?): HeadersWrapper {
+        if (value.isNullOrEmpty()) return HeadersWrapper(emptyMap())
         val map = mutableMapOf<String, String>()
         val json = JSONObject(value)
         val keys = json.keys()
@@ -27,26 +29,26 @@ class TypeConverters {
             val key = keys.next()
             map[key] = json.getString(key)
         }
-        return map
+        return HeadersWrapper(map)
     }
 
     @TypeConverter
-    fun fromStringList(list: List<String>?): String {
-        if (list == null) return "[]"
+    fun fromMirrorUrlsWrapper(wrapper: MirrorUrlsWrapper?): String {
+        if (wrapper == null) return "[]"
         val array = JSONArray()
-        list.forEach { array.put(it) }
+        wrapper.list.forEach { array.put(it) }
         return array.toString()
     }
 
     @TypeConverter
-    fun toStringList(value: String?): List<String> {
-        if (value.isNullOrEmpty()) return emptyList()
+    fun toMirrorUrlsWrapper(value: String?): MirrorUrlsWrapper {
+        if (value.isNullOrEmpty()) return MirrorUrlsWrapper(emptyList())
         val list = mutableListOf<String>()
         val array = JSONArray(value)
         for (i in 0 until array.length()) {
             list.add(array.getString(i))
         }
-        return list
+        return MirrorUrlsWrapper(list)
     }
 
     @TypeConverter
@@ -77,3 +79,4 @@ class TypeConverters {
         }
     }
 }
+

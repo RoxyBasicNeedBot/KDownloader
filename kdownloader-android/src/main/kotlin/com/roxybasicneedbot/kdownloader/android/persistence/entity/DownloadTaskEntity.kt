@@ -4,6 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 
+data class HeadersWrapper(val map: Map<String, String>)
+data class MirrorUrlsWrapper(val list: List<String>)
+
 @Entity(tableName = "download_tasks")
 data class DownloadTaskEntity(
     @PrimaryKey val id: String,
@@ -12,10 +15,10 @@ data class DownloadTaskEntity(
     val fileName: String,
     val priority: DownloadPriority,
     val chunkCount: Int,
-    val headers: Map<String, String>,
+    val headers: HeadersWrapper,
     val wifiOnly: Boolean,
     val speedLimit: Long,
-    val mirrorUrls: List<String>,
+    val mirrorUrls: MirrorUrlsWrapper,
     val hashAlgorithm: String?,
     val expectedHash: String?,
     val scheduleAt: Long?,
@@ -28,3 +31,4 @@ data class DownloadTaskEntity(
     val completedAt: Long?,
     val createdAt: Long = System.currentTimeMillis()
 )
+

@@ -5,6 +5,8 @@ import com.roxybasicneedbot.kdownloader.android.notification.DownloadNotificatio
 import com.roxybasicneedbot.kdownloader.android.notification.DownloadNotificationManager
 import com.roxybasicneedbot.kdownloader.android.persistence.KDownloaderDatabase
 import com.roxybasicneedbot.kdownloader.android.persistence.entity.DownloadTaskEntity
+import com.roxybasicneedbot.kdownloader.android.persistence.entity.HeadersWrapper
+import com.roxybasicneedbot.kdownloader.android.persistence.entity.MirrorUrlsWrapper
 import com.roxybasicneedbot.kdownloader.android.worker.WorkManagerScheduler
 import com.roxybasicneedbot.kdownloader.core.model.*
 import kotlinx.coroutines.flow.Flow
@@ -34,10 +36,10 @@ class KDownloader private constructor(private val context: Context) {
             fileName = request.fileName,
             priority = request.priority,
             chunkCount = request.chunkCount,
-            headers = request.headers,
+            headers = HeadersWrapper(request.headers),
             wifiOnly = request.wifiOnly,
             speedLimit = request.speedLimit,
-            mirrorUrls = request.mirrorUrls,
+            mirrorUrls = MirrorUrlsWrapper(request.mirrorUrls),
             hashAlgorithm = request.hashAlgorithm,
             expectedHash = request.expectedHash,
             scheduleAt = request.scheduleAt,

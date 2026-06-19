@@ -107,6 +107,9 @@ fun DownloadButton(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Queued")
                 }
+                is DownloadState.Scheduled -> {
+                    Text("Scheduled")
+                }
                 is DownloadState.Connecting -> {
                     CircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
@@ -237,7 +240,9 @@ fun DownloadItemCard(
                 val statusText = when (state) {
                     is DownloadState.Idle -> "Idle"
                     is DownloadState.Queued -> "Queued..."
+                    is DownloadState.Scheduled -> "Scheduled"
                     is DownloadState.Connecting -> "Connecting to server..."
+                    is DownloadState.Downloading -> "Downloading..."
                     is DownloadState.Paused -> "Paused"
                     is DownloadState.Merging -> "Merging chunk files..."
                     is DownloadState.Verifying -> "Verifying file checksum..."

@@ -34,7 +34,7 @@ class KDownloader private constructor(private val context: Context) {
             url = request.url,
             destinationDir = request.destinationDir,
             fileName = request.fileName,
-            priority = request.priority,
+            priority = request.priority.name,
             chunkCount = request.chunkCount,
             headers = HeadersWrapper(request.headers),
             wifiOnly = request.wifiOnly,

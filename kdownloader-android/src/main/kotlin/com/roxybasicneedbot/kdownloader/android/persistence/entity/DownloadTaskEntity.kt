@@ -2,7 +2,6 @@ package com.roxybasicneedbot.kdownloader.android.persistence.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 
 data class HeadersWrapper(val map: Map<String, String>)
 data class MirrorUrlsWrapper(val list: List<String>)
@@ -13,7 +12,7 @@ data class DownloadTaskEntity(
     val url: String,
     val destinationDir: String,
     val fileName: String,
-    val priority: DownloadPriority,
+    val priority: String,
     val chunkCount: Int,
     val headers: HeadersWrapper,
     val wifiOnly: Boolean,

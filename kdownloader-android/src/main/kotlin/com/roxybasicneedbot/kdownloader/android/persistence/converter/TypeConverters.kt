@@ -1,8 +1,6 @@
 package com.roxybasicneedbot.kdownloader.android.persistence.converter
 
 import androidx.room.TypeConverter
-import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
-import com.roxybasicneedbot.kdownloader.core.model.ChunkStatus
 import com.roxybasicneedbot.kdownloader.android.persistence.entity.HeadersWrapper
 import com.roxybasicneedbot.kdownloader.android.persistence.entity.MirrorUrlsWrapper
 import org.json.JSONArray
@@ -50,33 +48,6 @@ object TypeConverters {
         }
         return MirrorUrlsWrapper(list)
     }
-
-    @TypeConverter
-    fun fromDownloadPriority(priority: DownloadPriority?): String {
-        return priority?.name ?: DownloadPriority.NORMAL.name
-    }
-
-    @TypeConverter
-    fun toDownloadPriority(value: String?): DownloadPriority {
-        return try {
-            DownloadPriority.valueOf(value ?: DownloadPriority.NORMAL.name)
-        } catch (e: Exception) {
-            DownloadPriority.NORMAL
-        }
-    }
-
-    @TypeConverter
-    fun fromChunkStatus(status: ChunkStatus?): String {
-        return status?.name ?: ChunkStatus.PENDING.name
-    }
-
-    @TypeConverter
-    fun toChunkStatus(value: String?): ChunkStatus {
-        return try {
-            ChunkStatus.valueOf(value ?: ChunkStatus.PENDING.name)
-        } catch (e: Exception) {
-            ChunkStatus.PENDING
-        }
-    }
 }
+
 

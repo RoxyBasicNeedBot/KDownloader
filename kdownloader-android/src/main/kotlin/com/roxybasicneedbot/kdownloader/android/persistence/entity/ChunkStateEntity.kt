@@ -3,7 +3,6 @@ package com.roxybasicneedbot.kdownloader.android.persistence.entity
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import com.roxybasicneedbot.kdownloader.core.model.ChunkStatus
 
 @Entity(
     tableName = "chunk_states",
@@ -24,9 +23,10 @@ data class ChunkStateEntity(
     val startByte: Long,
     val endByte: Long,
     val downloadedBytes: Long,
-    val status: ChunkStatus,
+    val status: String,
     val mirrorUrl: String?,
     val tempFilePath: String,
     val speedBytesPerSec: Long,
     val retryCount: Int
 )
+

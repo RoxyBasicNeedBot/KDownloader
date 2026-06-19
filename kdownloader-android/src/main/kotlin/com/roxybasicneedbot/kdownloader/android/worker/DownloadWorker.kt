@@ -14,6 +14,7 @@ import com.roxybasicneedbot.kdownloader.core.engine.DownloadEngine
 import com.roxybasicneedbot.kdownloader.core.model.DownloadConfig
 import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
 import com.roxybasicneedbot.kdownloader.core.model.DownloadState
+import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 import com.roxybasicneedbot.kdownloader.core.network.HttpClientFactory
 import com.roxybasicneedbot.kdownloader.core.network.PlatformNetworkMonitor
 import com.roxybasicneedbot.kdownloader.core.storage.PlatformFileStorage
@@ -182,7 +183,7 @@ private fun DownloadTaskEntity.toDownloadRequest(): DownloadRequest {
         url = url,
         destinationDir = destinationDir,
         fileName = fileName,
-        priority = priority,
+        priority = try { DownloadPriority.valueOf(priority) } catch (e: Exception) { DownloadPriority.NORMAL },
         chunkCount = chunkCount,
         headers = headers.map,
         wifiOnly = wifiOnly,

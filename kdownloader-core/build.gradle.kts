@@ -12,7 +12,7 @@ kotlin {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
-    // jvm()
+    jvm()
 
     iosArm64()
     iosSimulatorArm64()
@@ -41,11 +41,11 @@ kotlin {
             }
         }
 
-//        val jvmMain by getting {
-//            dependencies {
-//                implementation(libs.ktor.client.cio)
-//            }
-//        }
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+            }
+        }
 
         val iosMain by getting {
             dependencies {

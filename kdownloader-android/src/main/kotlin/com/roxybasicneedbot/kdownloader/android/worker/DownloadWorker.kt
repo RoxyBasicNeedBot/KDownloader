@@ -18,6 +18,10 @@ import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 import com.roxybasicneedbot.kdownloader.core.network.HttpClientFactory
 import com.roxybasicneedbot.kdownloader.core.network.PlatformNetworkMonitor
 import com.roxybasicneedbot.kdownloader.core.storage.PlatformFileStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.takeWhile
 
@@ -86,7 +90,7 @@ class DownloadWorker(
         var isFailed = false
 
         // Collect progress and states from engine, updating db and notifications
-        val stateJob = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+        val stateJob = CoroutineScope(Dispatchers.IO).launch {
             engine.states.collect { (stateId, state) ->
                 if (stateId != id) return@collect
                 
@@ -144,7 +148,7 @@ class DownloadWorker(
             
             // Wait for completion or failure
             while (!isDone && !isFailed && !isStopped) {
-                kotlinx.coroutines.delay(200)
+                delay(200)
             }
             
             if (isStopped) {

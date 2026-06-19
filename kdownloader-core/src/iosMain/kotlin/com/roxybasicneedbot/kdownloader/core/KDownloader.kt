@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.objc.objc_sync_enter
 import platform.objc.objc_sync_exit
+import platform.Foundation.NSURL
+import platform.Foundation.NSFileManager
 
 interface DownloadListener {
     fun onTasksUpdated(tasks: List<Map<String, Any?>>)
@@ -33,6 +35,7 @@ class KDownloader private constructor() {
     val tasks: StateFlow<Map<String, DownloadState>> = _tasks.asStateFlow()
 
     private val listeners = mutableListOf<DownloadListener>()
+    private val pendingRequests = mutableMapOf<String, DownloadRequest>()
 
     init {
         engine.states
@@ -41,6 +44,17 @@ class KDownloader private constructor() {
                 current[id] = state
                 _tasks.value = current
                 notifyListeners()
+
+                val hasActive = current.values.any {
+                    it is DownloadState.Downloading ||
+                    it is DownloadState.Connecting ||
+                    it is DownloadState.Merging
+                }
+                if (hasActive) {
+                    IosBackgroundManager.beginBackgroundTask()
+                } else {
+                    IosBackgroundManager.endBackgroundTask()
+                }
             }
             .launchIn(scope)
     }
@@ -119,42 +133,142 @@ class KDownloader private constructor() {
         _tasks.value = current
         notifyListeners()
 
-        scope.launch {
-            try {
-                engine.start(request)
-            } catch (e: Exception) {
-                val fail = _tasks.value.toMutableMap()
-                fail[id] = DownloadState.Failed(DownloadError(ErrorCode.UNKNOWN, e.message ?: "Failed"), 0)
-                _tasks.value = fail
-                notifyListeners()
+        pendingRequests[id] = request
+
+        if (groupTag == "background") {
+            NativeIosDownloader.startDownload(id, url)
+        } else {
+            scope.launch {
+                try {
+                    engine.start(request)
+                } catch (e: Exception) {
+                    val fail = _tasks.value.toMutableMap()
+                    fail[id] = DownloadState.Failed(DownloadError(ErrorCode.UNKNOWN, e.message ?: "Failed"), 0)
+                    _tasks.value = fail
+                    notifyListeners()
+                }
             }
         }
         return id
     }
 
+    internal fun updateProgress(id: String, downloaded: Long, total: Long) {
+        val current = _tasks.value.toMutableMap()
+        current[id] = DownloadState.Downloading(
+            DownloadProgress(
+                downloadedBytes = downloaded,
+                totalBytes = total,
+                percent = if (total > 0) ((downloaded * 100) / total).toInt() else 0,
+                speedBytesPerSec = 0,
+                speedFormatted = "0 B/s",
+                etaSeconds = 0,
+                etaFormatted = "0s",
+                activeChunks = 1,
+                totalChunks = 1,
+                chunkProgress = emptyList()
+            )
+        )
+        _tasks.value = current
+        notifyListeners()
+    }
+
+    @OptIn(ExperimentalForeignApi::class)
+    internal fun completeDownload(id: String, tempUrl: NSURL) {
+        val request = pendingRequests[id]
+        if (request != null) {
+            val fileManager = NSFileManager.defaultManager()
+            val destPath = "${request.destinationDir}/${request.fileName}"
+            val destUrl = NSURL.fileURLWithPath(destPath)
+            if (fileManager.fileExistsAtPath(destPath)) {
+                fileManager.removeItemAtURL(destUrl, null)
+            }
+            val success = fileManager.moveItemAtURL(tempUrl, destUrl, null)
+            val current = _tasks.value.toMutableMap()
+            if (success) {
+                current[id] = DownloadState.Done(
+                    DownloadResult(
+                        id = id,
+                        filePath = destPath,
+                        totalBytes = request.speedLimit,
+                        downloadTimeMs = 0L,
+                        averageSpeedBytesPerSec = 0L,
+                        hashVerified = false
+                    )
+                )
+            } else {
+                current[id] = DownloadState.Failed(DownloadError(ErrorCode.WRITE_ERROR, "Failed to move native downloaded file"), 0)
+            }
+            _tasks.value = current
+            notifyListeners()
+        }
+    }
+
+    internal fun failDownload(id: String, error: String) {
+        val current = _tasks.value.toMutableMap()
+        current[id] = DownloadState.Failed(DownloadError(ErrorCode.UNKNOWN, error), 0)
+        _tasks.value = current
+        notifyListeners()
+    }
+
     fun pause(id: String) {
-        scope.launch {
-            engine.stop(id)
+        val request = pendingRequests[id]
+        if (request?.groupTag == "background") {
+            NativeIosDownloader.cancelDownload(id)
+            val current = _tasks.value.toMutableMap()
+            current[id] = DownloadState.Paused
+            _tasks.value = current
+            notifyListeners()
+        } else {
+            scope.launch {
+                engine.stop(id)
+            }
         }
     }
 
     fun resume(id: String) {
         val currentTask = _tasks.value[id]
         if (currentTask is DownloadState.Paused || currentTask is DownloadState.Failed) {
+            val request = pendingRequests[id]
             val current = _tasks.value.toMutableMap()
             current[id] = DownloadState.Queued
             _tasks.value = current
             notifyListeners()
+
+            if (request != null) {
+                if (request.groupTag == "background") {
+                    NativeIosDownloader.startDownload(id, request.url)
+                } else {
+                    scope.launch {
+                        try {
+                            engine.start(request)
+                        } catch (e: Exception) {
+                            val fail = _tasks.value.toMutableMap()
+                            fail[id] = DownloadState.Failed(DownloadError(ErrorCode.UNKNOWN, e.message ?: "Failed"), 0)
+                            _tasks.value = fail
+                            notifyListeners()
+                        }
+                    }
+                }
+            }
         }
     }
 
     fun cancel(id: String) {
-        scope.launch {
-            engine.stop(id)
+        val request = pendingRequests[id]
+        if (request?.groupTag == "background") {
+            NativeIosDownloader.cancelDownload(id)
             val current = _tasks.value.toMutableMap()
             current.remove(id)
             _tasks.value = current
             notifyListeners()
+        } else {
+            scope.launch {
+                engine.stop(id)
+                val current = _tasks.value.toMutableMap()
+                current.remove(id)
+                _tasks.value = current
+                notifyListeners()
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    // alias(libs.plugins.skie)
+    alias(libs.plugins.skie)
 }
 
 kotlin {
@@ -14,9 +14,21 @@ kotlin {
     }
     jvm()
 
-    iosArm64()
-    iosSimulatorArm64()
-    iosX64()
+    iosArm64 {
+        binaries.framework {
+            baseName = "kdownloader_core"
+        }
+    }
+    iosSimulatorArm64 {
+        binaries.framework {
+            baseName = "kdownloader_core"
+        }
+    }
+    iosX64 {
+        binaries.framework {
+            baseName = "kdownloader_core"
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
@@ -68,3 +80,46 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+tasks.register("assembleKdownloader_coreXCFramework") {
+    dependsOn("linkReleaseFrameworkIosArm64", "linkReleaseFrameworkIosSimulatorArm64", "linkReleaseFrameworkIosX64")
+    
+    doLast {
+        val buildDir = layout.buildDirectory.get().asFile
+        val outputDir = project.rootDir.resolve("kdownloader-flutter/ios/kdownloader_core.xcframework")
+        
+        if (outputDir.exists()) {
+            outputDir.deleteRecursively()
+        }
+        
+        val armFramework = File(buildDir, "bin/iosArm64/releaseFramework/kdownloader_core.framework")
+        val simArm64Framework = File(buildDir, "bin/iosSimulatorArm64/releaseFramework/kdownloader_core.framework")
+        val simX64Framework = File(buildDir, "bin/iosX64/releaseFramework/kdownloader_core.framework")
+        
+        // Merge simulator frameworks (arm64 & x64) using lipo
+        val mergedSimFrameworkDir = File(buildDir, "bin/iosSimulatorMerged/releaseFramework/kdownloader_core.framework")
+        if (mergedSimFrameworkDir.exists()) {
+            mergedSimFrameworkDir.deleteRecursively()
+        }
+        simArm64Framework.copyRecursively(mergedSimFrameworkDir, overwrite = true)
+        
+        val lipoProcess = ProcessBuilder(
+            "lipo", "-create",
+            File(simArm64Framework, "kdownloader_core").absolutePath,
+            File(simX64Framework, "kdownloader_core").absolutePath,
+            "-output", File(mergedSimFrameworkDir, "kdownloader_core").absolutePath
+        ).inheritIO().start()
+        if (lipoProcess.waitFor() != 0) throw GradleException("lipo failed")
+        
+        // Create XCFramework
+        val xcodebuildProcess = ProcessBuilder(
+            "xcodebuild", "-create-xcframework",
+            "-framework", armFramework.absolutePath,
+            "-framework", mergedSimFrameworkDir.absolutePath,
+            "-output", outputDir.absolutePath
+        ).inheritIO().start()
+        if (xcodebuildProcess.waitFor() != 0) throw GradleException("xcodebuild failed")
+    }
+}
+
+

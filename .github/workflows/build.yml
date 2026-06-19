@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Compile and Test
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Code

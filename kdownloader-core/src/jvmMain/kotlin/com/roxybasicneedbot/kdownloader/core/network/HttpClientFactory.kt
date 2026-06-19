@@ -9,7 +9,9 @@ actual class HttpClientFactory actual constructor() {
         return HttpClient(CIO) {
             engine {
                 requestTimeout = config.readTimeoutMs
-                connectTimeout = config.connectionTimeoutMs
+                endpoint {
+                    connectTimeout = config.connectionTimeoutMs
+                }
             }
         }
     }

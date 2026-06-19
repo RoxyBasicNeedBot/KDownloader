@@ -26,4 +26,4 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Compile All Variants (Debug & Release)
-        run: ./gradlew assembleDebug assembleRelease --no-daemon
+        run: ./gradlew assembleDebug assembleRelease compileKotlinIosX64 compileKotlinIosArm64 compileKotlinIosSimulatorArm64 --no-daemon

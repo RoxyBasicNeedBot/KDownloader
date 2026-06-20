@@ -43,6 +43,41 @@ KDownloader/
 
 ---
 
+## 📦 Installation
+
+**Android / Desktop (Gradle)**
+```kotlin
+implementation("com.roxybasicneedbot.kdownloader:core:2.6.0")
+// Optional
+implementation("com.roxybasicneedbot.kdownloader:android:2.6.0")
+implementation("com.roxybasicneedbot.kdownloader:compose:2.6.0")
+```
+
+**iOS (Swift Package Manager)**
+```swift
+dependencies: [
+    .package(url: "https://github.com/RoxyBasicNeedBot/KDownloader.git", from: "2.6.0")
+]
+```
+
+**.NET (NuGet)**
+```bash
+dotnet add package KDownloader.Net --version 2.6.0
+```
+
+**Flutter (pub.dev)**
+```yaml
+dependencies:
+  kdownloader_flutter: ^2.6.0
+```
+
+**React Native (npm)**
+```bash
+npm install kdownloader-react-native
+```
+
+---
+
 ## 💻 Idiomatic Usage Examples
 
 ### 🟣 Kotlin (Android / Desktop)
@@ -135,6 +170,26 @@ downloader.observe(id).listen((state) {
     done: (result) => print('Downloaded to: ${result.filePath}'),
     failed: (error, _) => print('Error: $error'),
   );
+});
+```
+
+### ⚛️ React Native (TypeScript)
+```typescript
+import KDownloader from 'kdownloader-react-native';
+
+const id = await KDownloader.enqueue({
+  id: 'task-1',
+  url: 'https://example.com/file.zip',
+  destinationDir: '/downloads',
+  fileName: 'file.zip',
+  chunkCount: 4
+});
+
+KDownloader.observe((states) => {
+  const task = states.find(s => s.id === id);
+  if (task && task.status === 'DOWNLOADING') {
+    console.log(`${task.progress.percent}% | ${task.progress.speedFormatted}`);
+  }
 });
 ```
 

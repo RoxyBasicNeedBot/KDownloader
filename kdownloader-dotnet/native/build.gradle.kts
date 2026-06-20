@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 kotlin {
@@ -40,6 +41,7 @@ kotlin {
             dependencies {
                 implementation(project(":kdownloader-core"))
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
     }

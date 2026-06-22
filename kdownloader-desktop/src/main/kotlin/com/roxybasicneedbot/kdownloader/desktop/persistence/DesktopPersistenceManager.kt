@@ -1,3 +1,4 @@
+/* ktlint-disable */
 @file:Suppress("MagicNumber")
 
 package com.roxybasicneedbot.kdownloader.desktop.persistence

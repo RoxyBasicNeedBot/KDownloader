@@ -1,3 +1,4 @@
+/* ktlint-disable */
 @file:Suppress("MaxLineLength")
 
 package com.roxybasicneedbot.kdownloader.desktop

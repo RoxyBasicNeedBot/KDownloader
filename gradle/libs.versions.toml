@@ -18,6 +18,7 @@ ktlint = "12.1.2"
 kover = "0.8.3"
 agp = "8.7.3"
 ksp = "2.1.0-1.0.29"
+compose-multiplatform = "1.7.0"
 
 [libraries]
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
@@ -66,3 +67,4 @@ skie = { id = "co.touchlab.skie", version.ref = "skie" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 jlleitschuh-gradle-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

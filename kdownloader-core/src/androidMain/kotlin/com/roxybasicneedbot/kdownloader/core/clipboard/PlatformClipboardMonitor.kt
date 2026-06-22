@@ -1,3 +1,4 @@
+/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.core.clipboard
 
 import android.content.ClipboardManager

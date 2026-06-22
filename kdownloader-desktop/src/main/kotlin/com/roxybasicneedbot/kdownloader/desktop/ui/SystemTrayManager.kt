@@ -1,3 +1,5 @@
+@file:Suppress("SwallowedException", "MagicNumber")
+
 package com.roxybasicneedbot.kdownloader.desktop.ui
 
 import java.awt.AWTException

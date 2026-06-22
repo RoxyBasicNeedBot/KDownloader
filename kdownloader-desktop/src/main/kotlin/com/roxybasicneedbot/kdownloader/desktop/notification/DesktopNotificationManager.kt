@@ -1,3 +1,5 @@
+@file:Suppress("UnusedParameter")
+
 package com.roxybasicneedbot.kdownloader.desktop.notification
 
 import com.roxybasicneedbot.kdownloader.core.model.DownloadState

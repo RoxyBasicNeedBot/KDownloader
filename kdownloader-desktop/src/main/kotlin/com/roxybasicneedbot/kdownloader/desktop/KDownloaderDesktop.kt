@@ -1,3 +1,5 @@
+@file:Suppress("MaxLineLength")
+
 package com.roxybasicneedbot.kdownloader.desktop
 
 import com.roxybasicneedbot.kdownloader.core.engine.DownloadEngine

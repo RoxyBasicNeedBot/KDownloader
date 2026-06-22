@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber")
+
 package com.roxybasicneedbot.kdownloader.desktop.persistence
 
 import kotlinx.coroutines.Dispatchers

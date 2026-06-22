@@ -1,9 +1,13 @@
 package com.roxybasicneedbot.kdownloader.native
 
 import com.roxybasicneedbot.kdownloader.core.engine.DownloadEngine
+import com.roxybasicneedbot.kdownloader.core.model.DownloadConfig
+import com.roxybasicneedbot.kdownloader.core.storage.PlatformFileStorage
+import com.roxybasicneedbot.kdownloader.core.network.PlatformNetworkMonitor
+import com.roxybasicneedbot.kdownloader.core.network.HttpClientFactory
 import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
 import com.roxybasicneedbot.kdownloader.core.model.DownloadState
-import com.roxybasicneedbot.kdownloader.core.model.Priority
+import com.roxybasicneedbot.kdownloader.core.model.DownloadPriority
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
@@ -35,8 +39,17 @@ data class NativeDownloadState(
 object NativeDownloadManager {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val activeEngines = mutableMapOf<String, Pair<DownloadEngine, Job>>()
+    private val suspendedRequests = mutableMapOf<String, DownloadRequest>()
+    private val latestStates = mutableMapOf<String, NativeDownloadState>()
     
     private val json = Json { ignoreUnknownKeys = true }
+
+    @CName("kdownloader_free_string")
+    fun freeString(ptr: CPointer<ByteVar>?) {
+        if (ptr != null) {
+            nativeHeap.free(ptr)
+        }
+    }
 
     @CName("kdownloader_enqueue")
     fun enqueue(requestJsonPtr: CPointer<ByteVar>?): CPointer<ByteVar>? {
@@ -52,7 +65,7 @@ object NativeDownloadManager {
                 destinationDir = nativeReq.destinationDir,
                 fileName = nativeReq.fileName,
                 chunkCount = nativeReq.chunkCount,
-                priority = Priority.NORMAL,
+                priority = DownloadPriority.NORMAL,
                 headers = emptyMap(),
                 wifiOnly = false,
                 speedLimit = 0L,
@@ -63,18 +76,36 @@ object NativeDownloadManager {
                 groupTag = null
             )
             
-            val engine = DownloadEngine(request)
+            val engine = DownloadEngine(
+                DownloadConfig(),
+                PlatformFileStorage(),
+                PlatformNetworkMonitor(),
+                HttpClientFactory()
+            )
             val job = scope.launch {
-                engine.state.collect { state ->
+                engine.states.collect { (_, state) ->
+                    val nativeState = when (state) {
+                        is DownloadState.Downloading -> NativeDownloadState("RUNNING", state.progress.percent, state.progress.downloadedBytes, state.progress.totalBytes, state.progress.speedFormatted, null)
+                        is DownloadState.Done -> NativeDownloadState("DONE", 100, state.result.totalBytes, state.result.totalBytes, "", null)
+                        is DownloadState.Failed -> NativeDownloadState("FAILED", 0, 0, 0, "", state.error.message)
+                        is DownloadState.Paused -> NativeDownloadState("PAUSED")
+                        is DownloadState.Cancelled -> NativeDownloadState("CANCELLED")
+                        else -> NativeDownloadState(state::class.simpleName ?: "UNKNOWN")
+                    }
+                    latestStates[nativeReq.id] = nativeState
+
                     if (state is DownloadState.Done || state is DownloadState.Failed || state is DownloadState.Cancelled) {
                         activeEngines.remove(nativeReq.id)
+                        suspendedRequests.remove(nativeReq.id)
                     }
                 }
             }
             activeEngines[nativeReq.id] = Pair(engine, job)
-            engine.start()
+            suspendedRequests[nativeReq.id] = request
             
-            return nativeReq.id.cstr.getPointer(MemScope())
+            scope.launch { engine.start(request) }
+            
+            return nativeReq.id.cstr.getPointer(nativeHeap)
         } catch (e: Exception) {
             println("kdownloader_enqueue error: ${e.message}")
             return null
@@ -84,15 +115,45 @@ object NativeDownloadManager {
     @CName("kdownloader_pause")
     fun pause(taskIdPtr: CPointer<ByteVar>?) {
         val taskId = taskIdPtr?.toKString() ?: return
-        // Core DownloadEngine requires pause implementation or task cancellation
         val pair = activeEngines[taskId]
         pair?.second?.cancel()
         activeEngines.remove(taskId)
+        scope.launch { pair?.first?.stop(taskId) }
+        latestStates[taskId] = NativeDownloadState("PAUSED")
     }
 
     @CName("kdownloader_resume")
     fun resume(taskIdPtr: CPointer<ByteVar>?) {
-        // Not implemented in this basic wrapper
+        val taskId = taskIdPtr?.toKString() ?: return
+        if (activeEngines.containsKey(taskId)) return // already running
+        
+        val request = suspendedRequests[taskId] ?: return
+        val engine = DownloadEngine(
+            DownloadConfig(),
+            PlatformFileStorage(),
+            PlatformNetworkMonitor(),
+            HttpClientFactory()
+        )
+        val job = scope.launch {
+            engine.states.collect { (_, state) ->
+                val nativeState = when (state) {
+                    is DownloadState.Downloading -> NativeDownloadState("RUNNING", state.progress.percent, state.progress.downloadedBytes, state.progress.totalBytes, state.progress.speedFormatted, null)
+                    is DownloadState.Done -> NativeDownloadState("DONE", 100, state.result.totalBytes, state.result.totalBytes, "", null)
+                    is DownloadState.Failed -> NativeDownloadState("FAILED", 0, 0, 0, "", state.error.message)
+                    is DownloadState.Paused -> NativeDownloadState("PAUSED")
+                    is DownloadState.Cancelled -> NativeDownloadState("CANCELLED")
+                    else -> NativeDownloadState(state::class.simpleName ?: "UNKNOWN")
+                }
+                latestStates[taskId] = nativeState
+
+                if (state is DownloadState.Done || state is DownloadState.Failed || state is DownloadState.Cancelled) {
+                    activeEngines.remove(taskId)
+                    suspendedRequests.remove(taskId)
+                }
+            }
+        }
+        activeEngines[taskId] = Pair(engine, job)
+        scope.launch { engine.start(request) }
     }
 
     @CName("kdownloader_cancel")
@@ -101,26 +162,16 @@ object NativeDownloadManager {
         val pair = activeEngines[taskId]
         pair?.second?.cancel()
         activeEngines.remove(taskId)
+        suspendedRequests.remove(taskId)
+        scope.launch { pair?.first?.stop(taskId) }
+        latestStates[taskId] = NativeDownloadState("CANCELLED")
     }
 
     @CName("kdownloader_get_state")
     fun getState(taskIdPtr: CPointer<ByteVar>?): CPointer<ByteVar>? {
         val taskId = taskIdPtr?.toKString() ?: return null
-        val pair = activeEngines[taskId]
-        
-        val nativeState = if (pair == null) {
-            NativeDownloadState("NOT_FOUND")
-        } else {
-            val engine = pair.first
-            // We need a way to get the current state synchronously.
-            // Since Flow doesn't have `value` unless it's a StateFlow, we assume `engine.state` 
-            // is a StateFlow, or we just track the latest state in the collect block.
-            // For now, let's just return a placeholder or track it.
-            // Let's assume we can cast it or track it.
-            NativeDownloadState("RUNNING") // simplified for demo
-        }
-        
+        val nativeState = latestStates[taskId] ?: NativeDownloadState("NOT_FOUND")
         val jsonString = json.encodeToString(nativeState)
-        return jsonString.cstr.getPointer(MemScope())
+        return jsonString.cstr.getPointer(nativeHeap)
     }
 }

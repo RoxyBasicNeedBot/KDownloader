@@ -2,13 +2,13 @@ import Flutter
 import UIKit
 import kdownloader_core
 
-public class KdownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
+public class KDownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private var eventSink: FlutterEventSink?
     private var observeTask: Task<Void, Never>?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "com.roxybasicneedbot.kdownloader/methods", binaryMessenger: registrar.messenger())
-        let instance = KdownloaderFlutterPlugin()
+        let instance = KDownloaderFlutterPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         
         let eventChannel = FlutterEventChannel(name: "com.roxybasicneedbot.kdownloader/events", binaryMessenger: registrar.messenger())
@@ -31,12 +31,14 @@ public class KdownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             
             // Build the priority enum if exposed to iOS
             // Assuming KDownloader_core exposes the Builder or directly DownloadRequest
+            let priorityStr = args["priority"] as? String ?? "NORMAL"
+            let priority: DownloadPriority = priorityStr == "HIGH" ? .high : (priorityStr == "LOW" ? .low : .normal)
             let request = DownloadRequest(
                 id: id,
                 url: url,
                 destinationDir: destinationDir,
                 fileName: fileName,
-                priority: .normal, // Should parse from args["priority"] if needed
+                priority: priority,
                 chunkCount: Int32(args["chunkCount"] as? Int ?? 4),
                 headers: args["headers"] as? [String: String] ?? [:],
                 wifiOnly: args["wifiOnly"] as? Bool ?? false,
@@ -116,12 +118,20 @@ public class KdownloaderFlutterPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             do {
                 // Skie bridging Flow<List<DownloadTaskEntity>> to Swift AsyncSequence
                 for try await states in KDownloader.companion.instance.observeAll() {
-                    // Serializing the states to a JSON string or Array of Dictionaries
-                    // Assuming states has properties that map cleanly or a helper function
-                    // For now, we will return an empty list or mock serialized state 
-                    // since we don't have the exact structure of DownloadTaskEntity mapping in Swift
+                    let array: [[String: Any]] = states.map { task in
+                        return [
+                            "id": task.id,
+                            "url": task.url,
+                            "destinationDir": task.destinationDir,
+                            "fileName": task.fileName,
+                            "status": task.status,
+                            "downloadedBytes": task.downloadedBytes,
+                            "totalBytes": task.totalBytes,
+                            "errorMessage": task.errorMessage ?? ""
+                        ]
+                    }
                     DispatchQueue.main.async {
-                        self.eventSink?("[]") // TODO: map `states` to JSON array
+                        self.eventSink?(array)
                     }
                 }
             } catch {

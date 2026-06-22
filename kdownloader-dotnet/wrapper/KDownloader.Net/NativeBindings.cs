@@ -21,5 +21,8 @@ namespace KDownloader.Net
 
         [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern IntPtr kdownloader_get_state(string taskId);
+
+        [DllImport(LibName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        public static extern void kdownloader_free_string(IntPtr ptr);
     }
 }

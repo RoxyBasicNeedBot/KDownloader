@@ -2,8 +2,8 @@ package com.roxybasicneedbot.kdownloader.reactnative
 
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule
-import com.roxybasicneedbot.kdownloader.DownloadRequest
-import com.roxybasicneedbot.kdownloader.KDownloader
+import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
+import com.roxybasicneedbot.kdownloader.android.KDownloader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 
@@ -21,12 +21,16 @@ class KDownloaderModule(reactContext: ReactApplicationContext) : ReactContextBas
         scope.launch {
             KDownloader.getInstance(reactApplicationContext).observeAll().collectLatest { tasks ->
                 val array = Arguments.createArray()
-                // Assuming DownloadTaskEntity has fields. We mock serialization here:
                 tasks.forEach { task ->
                     val map = Arguments.createMap()
-                    // Add standard states based on DownloadState mapping
-                    // We just emit a placeholder for now since we don't have the exact Entity properties
-                    map.putString("id", task.toString())
+                    map.putString("id", task.id)
+                    map.putString("url", task.url)
+                    map.putString("destinationDir", task.destinationDir)
+                    map.putString("fileName", task.fileName)
+                    map.putString("status", task.status)
+                    map.putDouble("downloadedBytes", task.downloadedBytes.toDouble())
+                    map.putDouble("totalBytes", task.totalBytes.toDouble())
+                    map.putString("errorMessage", task.errorMessage)
                     array.pushMap(map)
                 }
                 
@@ -50,7 +54,21 @@ class KDownloaderModule(reactContext: ReactApplicationContext) : ReactContextBas
                 destinationDir = destinationDir,
                 fileName = fileName
             )
-            // Note: we can apply other optional arguments from requestMap if provided
+            
+            if (requestMap.hasKey("id")) builder.setId(requestMap.getString("id")!!)
+            if (requestMap.hasKey("chunkCount")) builder.setChunkCount(requestMap.getInt("chunkCount"))
+            if (requestMap.hasKey("wifiOnly")) builder.setWifiOnly(requestMap.getBoolean("wifiOnly"))
+            if (requestMap.hasKey("speedLimit")) builder.setSpeedLimit(requestMap.getDouble("speedLimit").toLong())
+            if (requestMap.hasKey("priority")) {
+                val p = requestMap.getString("priority")
+                if (p == "HIGH") builder.setPriority(com.roxybasicneedbot.kdownloader.core.model.DownloadPriority.HIGH)
+                else if (p == "LOW") builder.setPriority(com.roxybasicneedbot.kdownloader.core.model.DownloadPriority.LOW)
+            }
+            if (requestMap.hasKey("headers")) {
+                val headersMap = requestMap.getMap("headers")?.toHashMap()
+                headersMap?.forEach { (k, v) -> builder.addHeader(k, v.toString()) }
+            }
+            if (requestMap.hasKey("groupTag")) builder.setGroupTag(requestMap.getString("groupTag"))
             
             scope.launch {
                 try {

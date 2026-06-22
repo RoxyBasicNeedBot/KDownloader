@@ -1,6 +1,10 @@
 package com.roxybasicneedbot.kdownloader.desktop
 
 import com.roxybasicneedbot.kdownloader.core.engine.DownloadEngine
+import com.roxybasicneedbot.kdownloader.core.model.DownloadConfig
+import com.roxybasicneedbot.kdownloader.core.storage.PlatformFileStorage
+import com.roxybasicneedbot.kdownloader.core.network.PlatformNetworkMonitor
+import com.roxybasicneedbot.kdownloader.core.network.HttpClientFactory
 import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
 import com.roxybasicneedbot.kdownloader.core.model.DownloadState
 import com.roxybasicneedbot.kdownloader.desktop.notification.DesktopNotificationManager
@@ -75,10 +79,15 @@ class KDownloaderDesktop private constructor() {
     }
 
     private fun startDownload(request: DownloadRequest) {
-        val engine = DownloadEngine(request)
+        val engine = DownloadEngine(
+            DownloadConfig(),
+            PlatformFileStorage(),
+            PlatformNetworkMonitor(),
+            HttpClientFactory()
+        )
         
         val job = scope.launch {
-            engine.state.collect { state ->
+            engine.states.collect { (_, state) ->
                 notificationManager.showProgressNotification(request.id, request.fileName, state)
                 // In a real implementation, you would also update the SQLite database with the current state and progress
                 if (state is DownloadState.Done || state is DownloadState.Failed || state is DownloadState.Cancelled) {
@@ -87,7 +96,7 @@ class KDownloaderDesktop private constructor() {
             }
         }
         activeTasks[request.id] = job
-        engine.start()
+        scope.launch { engine.start(request) }
     }
 
     suspend fun pause(id: String) {
@@ -109,7 +118,13 @@ class KDownloaderDesktop private constructor() {
                 url = task.url,
                 destinationDir = task.destinationDir,
                 fileName = task.fileName,
-                // simplified mapping for demo
+                chunkCount = task.chunkCount,
+                wifiOnly = task.wifiOnly,
+                speedLimit = task.speedLimit,
+                hashAlgorithm = task.hashAlgorithm,
+                expectedHash = task.expectedHash,
+                scheduleAt = task.scheduleAt,
+                groupTag = task.groupTag
             )
             startDownload(request)
         }

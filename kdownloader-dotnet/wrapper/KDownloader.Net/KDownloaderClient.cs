@@ -16,7 +16,9 @@ namespace KDownloader.Net
             if (ptr == IntPtr.Zero) return string.Empty;
             
             // Kotlin/Native uses UTF-8 natively
-            return Marshal.PtrToStringUTF8(ptr) ?? string.Empty;
+            var id = Marshal.PtrToStringUTF8(ptr) ?? string.Empty;
+            NativeBindings.kdownloader_free_string(ptr);
+            return id;
         }
 
         public void Pause(string taskId) => NativeBindings.kdownloader_pause(taskId);
@@ -37,6 +39,8 @@ namespace KDownloader.Net
                 if (ptr != IntPtr.Zero)
                 {
                     var json = Marshal.PtrToStringUTF8(ptr);
+                    NativeBindings.kdownloader_free_string(ptr);
+                    
                     if (json != null && json != lastStateJson)
                     {
                         lastStateJson = json;

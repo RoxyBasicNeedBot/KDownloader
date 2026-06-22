@@ -22,9 +22,20 @@ class KDownloaderModule: RCTEventEmitter {
             do {
                 // Skie bridging Flow to Swift AsyncSequence
                 for try await states in downloader.observeAll() {
-                    // Placeholder for mapping states array to Array of Dictionaries
+                    let array: [[String: Any]] = states.map { task in
+                        return [
+                            "id": task.id,
+                            "url": task.url,
+                            "destinationDir": task.destinationDir,
+                            "fileName": task.fileName,
+                            "status": task.status,
+                            "downloadedBytes": task.downloadedBytes,
+                            "totalBytes": task.totalBytes,
+                            "errorMessage": task.errorMessage ?? ""
+                        ]
+                    }
                     DispatchQueue.main.async {
-                        self.sendEvent(withName: "onDownloadStateChange", body: [])
+                        self.sendEvent(withName: "onDownloadStateChange", body: array)
                     }
                 }
             } catch {
@@ -50,12 +61,15 @@ class KDownloaderModule: RCTEventEmitter {
             return
         }
         
+        let priorityStr = requestMap["priority"] as? String ?? "NORMAL"
+        let priority: DownloadPriority = priorityStr == "HIGH" ? .high : (priorityStr == "LOW" ? .low : .normal)
+        
         let request = DownloadRequest(
             id: id,
             url: url,
             destinationDir: destinationDir,
             fileName: fileName,
-            priority: .normal,
+            priority: priority,
             chunkCount: Int32(requestMap["chunkCount"] as? Int ?? 4),
             headers: requestMap["headers"] as? [String: String] ?? [:],
             wifiOnly: requestMap["wifiOnly"] as? Bool ?? false,

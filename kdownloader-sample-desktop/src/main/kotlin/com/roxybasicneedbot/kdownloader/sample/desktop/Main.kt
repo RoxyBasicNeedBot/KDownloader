@@ -17,8 +17,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import com.roxybasicneedbot.kdownloader.DownloadRequest
-import com.roxybasicneedbot.kdownloader.DownloadState
+import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
+import com.roxybasicneedbot.kdownloader.core.model.DownloadState
 import com.roxybasicneedbot.kdownloader.desktop.KDownloaderDesktop
 import kotlinx.coroutines.launch
 import java.io.File
@@ -51,16 +51,8 @@ fun KDownloaderApp() {
     // Assuming KDownloaderDesktop has a method to get/observe tasks. 
     // Since we don't know the exact structure of DownloadTaskEntity, we'll keep a basic local state mapped to the flows.
     // Wait, the user mentioned KDownloaderDesktop has observeAll(): Flow<List<DownloadTaskEntity>>
-    // We don't have the entity import, let's just make it simple.
-    
-    // Actually, KDownloaderDesktop has:
-    // fun observeAll(): Flow<List<DownloadTaskEntity>> 
-    // Since we don't have the exact entity here, we can just track tasks we enqueued locally to observe them if observeAll is tricky.
-    // Let's assume the user has com.roxybasicneedbot.kdownloader.database.DownloadTaskEntity or similar.
-    // Wait, let's keep track of states in our own list so we don't need the exact Entity class import if it's internal.
-    
-    data class TaskState(val id: String, val name: String, val state: DownloadState)
-    val tasks = remember { mutableStateListOf<TaskState>() }
+    val tasksFlow = remember { downloader.observeAll() }
+    val tasks by tasksFlow.collectAsState(initial = emptyList())
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("KDownloader Manager", style = MaterialTheme.typography.headlineMedium)
@@ -116,7 +108,6 @@ fun KDownloaderApp() {
         Spacer(modifier = Modifier.height(8.dp))
         
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            // We would map tasks here
             if (tasks.isEmpty()) {
                 item {
                     Text("No downloads queued.", style = MaterialTheme.typography.bodyLarge)
@@ -124,7 +115,7 @@ fun KDownloaderApp() {
             } else {
                 items(tasks) { task ->
                     DownloadItemCard(
-                        fileName = task.name,
+                        fileName = task.fileName,
                         state = task.state,
                         onPause = { scope.launch { downloader.pause(task.id) } },
                         onResume = { scope.launch { downloader.resume(task.id) } },

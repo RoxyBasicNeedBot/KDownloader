@@ -27,3 +27,15 @@ jobs:
 
       - name: Build and Compile All Variants (Debug & Release)
         run: ./gradlew assembleDebug assembleRelease compileKotlinJvm compileKotlinIosX64 compileKotlinIosArm64 compileKotlinIosSimulatorArm64 --no-daemon
+
+      - name: Run Detekt & Ktlint
+        run: ./gradlew detekt ktlintCheck --no-daemon
+
+      - name: Run Unit Tests
+        run: ./gradlew test --no-daemon
+
+      - name: Generate Code Coverage (Kover)
+        run: ./gradlew koverHtmlReport --no-daemon
+
+      - name: Publish to Maven Local (Test)
+        run: ./gradlew publishToMavenLocal --no-daemon

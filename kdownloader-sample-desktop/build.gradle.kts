@@ -13,6 +13,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(compose.material3)
     implementation(compose.ui)
+    implementation(compose.materialIconsExtended)
 }
 
 application {

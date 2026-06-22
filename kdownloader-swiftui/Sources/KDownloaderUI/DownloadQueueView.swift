@@ -39,18 +39,13 @@ public struct DownloadQueueView: View {
             do {
                 // Skie bridges Flow to Swift AsyncSequence
                 for try await updatedTasks in downloader.observeAll() {
-                    // Assuming updatedTasks is an array of items we can map
-                    // Since we don't have the explicit bridged Entity struct here, 
-                    // this is a conceptual mapping assuming `updatedTasks` conforms to sequence
-                    // and provides id, name, and state.
-                    /* 
-                    self.tasks = updatedTasks.map { item in
+                    let mapped = updatedTasks.map { item in
                         (id: item.id, fileName: item.fileName, state: item.state)
                     }
-                    */
                     
-                    // For the sake of compiling without exact bridged classes, just assign empty or mock
-                    self.tasks = []
+                    DispatchQueue.main.async {
+                        self.tasks = mapped
+                    }
                 }
             } catch {
                 print("Error observing tasks: \(error)")

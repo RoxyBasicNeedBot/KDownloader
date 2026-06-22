@@ -8,7 +8,11 @@ public struct KDownloaderTheme {
     
     public init(
         accentColor: Color = .blue,
+        #if canImport(UIKit)
         rowBackgroundColor: Color = Color(UIColor.secondarySystemBackground),
+        #else
+        rowBackgroundColor: Color = Color(NSColor.controlBackgroundColor),
+        #endif
         cornerRadius: CGFloat = 12.0,
         shadowRadius: CGFloat = 2.0
     ) {

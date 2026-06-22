@@ -1,4 +1,3 @@
-/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.core.storage
 
 import java.io.File
@@ -7,7 +6,11 @@ import java.io.RandomAccessFile
 actual class PlatformFileStorage {
     actual constructor()
 
-    actual suspend fun write(path: String, offset: Long, data: ByteArray) {
+    actual suspend fun write(
+        path: String,
+        offset: Long,
+        data: ByteArray,
+    ) {
         val file = File(path)
         file.parentFile?.mkdirs()
         RandomAccessFile(file, "rw").use { raf ->
@@ -16,7 +19,11 @@ actual class PlatformFileStorage {
         }
     }
 
-    actual suspend fun read(path: String, offset: Long, length: Int): ByteArray {
+    actual suspend fun read(
+        path: String,
+        offset: Long,
+        length: Int,
+    ): ByteArray {
         val file = File(path)
         if (!file.exists()) return ByteArray(0)
         RandomAccessFile(file, "r").use { raf ->
@@ -31,20 +38,22 @@ actual class PlatformFileStorage {
         File(path).delete()
     }
 
-    actual suspend fun exists(path: String): Boolean {
-        return File(path).exists()
-    }
+    actual suspend fun exists(path: String): Boolean = File(path).exists()
 
-    actual suspend fun size(path: String): Long {
-        return File(path).length()
-    }
+    actual suspend fun size(path: String): Long = File(path).length()
 
-    actual suspend fun createTempFile(prefix: String, suffix: String): String {
+    actual suspend fun createTempFile(
+        prefix: String,
+        suffix: String,
+    ): String {
         val temp = File.createTempFile(prefix, suffix)
         return temp.absolutePath
     }
 
-    actual suspend fun mergeFiles(sourcePaths: List<String>, destPath: String) {
+    actual suspend fun mergeFiles(
+        sourcePaths: List<String>,
+        destPath: String,
+    ) {
         val destFile = File(destPath)
         destFile.parentFile?.mkdirs()
         destFile.outputStream().use { output ->

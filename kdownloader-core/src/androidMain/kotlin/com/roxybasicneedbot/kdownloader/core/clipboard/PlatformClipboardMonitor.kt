@@ -1,4 +1,3 @@
-/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.core.clipboard
 
 import android.content.ClipboardManager
@@ -10,31 +9,33 @@ import kotlinx.coroutines.flow.callbackFlow
 import java.util.regex.Pattern
 
 actual class PlatformClipboardMonitor actual constructor() {
-    private val clipboardManager = AndroidContext.appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    private val clipboardManager =
+        AndroidContext.appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
     private val urlPattern = Pattern.compile(
-        "https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]"
+        "https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
     )
 
-    actual fun observeUrls(): Flow<String> = callbackFlow {
-        val listener = ClipboardManager.OnPrimaryClipChangedListener {
-            val text = getClipboardText()
-            if (text != null && isUrl(text)) {
-                trySend(text)
+    actual fun observeUrls(): Flow<String> =
+        callbackFlow {
+            val listener =
+                ClipboardManager.OnPrimaryClipChangedListener {
+                    val text = getClipboardText()
+                    if (text != null && isUrl(text)) {
+                        trySend(text)
+                    }
+                }
+            clipboardManager.addPrimaryClipChangedListener(listener)
+
+            val initialText = getClipboardText()
+            if (initialText != null && isUrl(initialText)) {
+                trySend(initialText)
+            }
+
+            awaitClose {
+                clipboardManager.removePrimaryClipChangedListener(listener)
             }
         }
-        clipboardManager.addPrimaryClipChangedListener(listener)
-        
-        // Emit initial value if any
-        val initialText = getClipboardText()
-        if (initialText != null && isUrl(initialText)) {
-            trySend(initialText)
-        }
-
-        awaitClose {
-            clipboardManager.removePrimaryClipChangedListener(listener)
-        }
-    }
 
     actual fun getClipboardText(): String? {
         val clip = clipboardManager.primaryClip ?: return null
@@ -45,7 +46,5 @@ actual class PlatformClipboardMonitor actual constructor() {
         return null
     }
 
-    private fun isUrl(text: String): Boolean {
-        return urlPattern.matcher(text).find()
-    }
+    private fun isUrl(text: String): Boolean = urlPattern.matcher(text).find()
 }

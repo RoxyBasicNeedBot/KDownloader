@@ -1,12 +1,15 @@
-/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.core.util
 
 import java.io.File
 import java.security.MessageDigest
 
 actual object HashVerifier {
-    actual suspend fun verify(filePath: String, expectedHash: String, algorithm: String): Boolean {
-        return try {
+    actual suspend fun verify(
+        filePath: String,
+        expectedHash: String,
+        algorithm: String,
+    ): Boolean =
+        try {
             val file = File(filePath)
             if (!file.exists()) return false
             val digest = MessageDigest.getInstance(algorithm)
@@ -24,5 +27,4 @@ actual object HashVerifier {
         } catch (e: Exception) {
             false
         }
-    }
 }

@@ -8,8 +8,8 @@ actual object HashVerifier {
         filePath: String,
         expectedHash: String,
         algorithm: String,
-    ): Boolean =
-        try {
+    ): Boolean {
+        return try {
             val file = File(filePath)
             if (!file.exists()) return false
             val digest = MessageDigest.getInstance(algorithm)
@@ -27,4 +27,5 @@ actual object HashVerifier {
         } catch (e: Exception) {
             false
         }
+    }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("FunctionNaming", "WildcardImport", "MaxLineLength")
+
 package com.roxybasicneedbot.kdownloader.sample.desktop
 
 import androidx.compose.foundation.layout.*

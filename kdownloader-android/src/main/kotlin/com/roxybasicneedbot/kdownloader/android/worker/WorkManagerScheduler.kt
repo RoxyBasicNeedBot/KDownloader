@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport")
+
 package com.roxybasicneedbot.kdownloader.android.worker
 
 import android.content.Context

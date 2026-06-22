@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "CyclomaticComplexMethod", "TooGenericExceptionCaught", "PrintStackTrace", "SwallowedException", "ReturnCount", "MaxLineLength", "MagicNumber")
+
 package com.roxybasicneedbot.kdownloader.android.worker
 
 import android.content.Context

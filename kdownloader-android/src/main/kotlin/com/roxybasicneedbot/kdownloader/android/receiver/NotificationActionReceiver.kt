@@ -1,3 +1,5 @@
+@file:Suppress("TooGenericExceptionCaught")
+
 package com.roxybasicneedbot.kdownloader.android.receiver
 
 import android.content.BroadcastReceiver

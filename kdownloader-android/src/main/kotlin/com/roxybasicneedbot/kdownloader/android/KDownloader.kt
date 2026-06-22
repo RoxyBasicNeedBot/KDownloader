@@ -1,3 +1,5 @@
+@file:Suppress("CyclomaticComplexMethod", "MagicNumber", "WildcardImport")
+
 package com.roxybasicneedbot.kdownloader.android
 
 import android.content.Context

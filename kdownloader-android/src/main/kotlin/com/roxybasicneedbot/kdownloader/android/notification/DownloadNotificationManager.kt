@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "SwallowedException", "MagicNumber")
+
 package com.roxybasicneedbot.kdownloader.android.notification
 
 import android.app.NotificationChannel

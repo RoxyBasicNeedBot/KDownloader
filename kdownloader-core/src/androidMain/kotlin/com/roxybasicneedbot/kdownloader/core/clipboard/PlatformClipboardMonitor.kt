@@ -12,9 +12,10 @@ actual class PlatformClipboardMonitor actual constructor() {
     private val clipboardManager =
         AndroidContext.appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
-    private val urlPattern = Pattern.compile(
-        "https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
-    )
+    private val urlPattern =
+        Pattern.compile(
+            "https?://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]",
+        )
 
     actual fun observeUrls(): Flow<String> =
         callbackFlow {

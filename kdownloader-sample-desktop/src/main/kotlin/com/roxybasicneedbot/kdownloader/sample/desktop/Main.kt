@@ -1,4 +1,3 @@
-/* ktlint-disable */
 @file:Suppress("FunctionNaming", "WildcardImport", "MaxLineLength")
 
 package com.roxybasicneedbot.kdownloader.sample.desktop

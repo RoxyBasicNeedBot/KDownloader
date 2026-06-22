@@ -1,4 +1,3 @@
-/* ktlint-disable */
 @file:Suppress("UnusedParameter")
 
 package com.roxybasicneedbot.kdownloader.desktop.notification

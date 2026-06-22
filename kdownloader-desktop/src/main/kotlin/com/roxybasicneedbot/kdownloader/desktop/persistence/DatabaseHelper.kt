@@ -1,4 +1,3 @@
-/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.desktop.persistence
 
 import java.io.File

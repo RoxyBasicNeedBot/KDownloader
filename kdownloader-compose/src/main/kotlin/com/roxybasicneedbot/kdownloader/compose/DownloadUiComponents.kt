@@ -1,4 +1,3 @@
-/* ktlint-disable */
 @file:Suppress("LongParameterList", "LongMethod", "CyclomaticComplexMethod", "FunctionNaming", "ImplicitDefaultLocale", "WildcardImport", "MaxLineLength", "MagicNumber")
 
 package com.roxybasicneedbot.kdownloader.compose

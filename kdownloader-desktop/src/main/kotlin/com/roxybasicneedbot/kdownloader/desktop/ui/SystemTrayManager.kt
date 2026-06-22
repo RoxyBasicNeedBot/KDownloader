@@ -1,4 +1,3 @@
-/* ktlint-disable */
 @file:Suppress("SwallowedException", "MagicNumber")
 
 package com.roxybasicneedbot.kdownloader.desktop.ui

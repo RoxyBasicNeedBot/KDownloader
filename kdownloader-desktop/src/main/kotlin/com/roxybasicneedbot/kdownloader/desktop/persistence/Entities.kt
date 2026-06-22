@@ -1,4 +1,3 @@
-/* ktlint-disable */
 package com.roxybasicneedbot.kdownloader.desktop.persistence
 
 data class HeadersWrapper(val map: Map<String, String>) {

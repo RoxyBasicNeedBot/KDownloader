@@ -30,5 +30,28 @@ allprojects {
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
     }
+
+    plugins.withId("com.android.library") {
+        configure<org.gradle.api.publish.PublishingExtension> {
+            publications {
+                create<org.gradle.api.publish.maven.MavenPublication>("release") {
+                    afterEvaluate {
+                        from(components["release"])
+                    }
+                }
+            }
+        }
+    }
+
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        configure<org.gradle.api.publish.PublishingExtension> {
+            publications {
+                create<org.gradle.api.publish.maven.MavenPublication>("mavenJava") {
+                    from(components["java"])
+                }
+            }
+        }
+    }
 }
+
 

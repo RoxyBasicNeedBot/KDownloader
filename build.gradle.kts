@@ -23,4 +23,11 @@ allprojects {
         buildUponDefaultConfig = true
         allRules = false
     }
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
+    }
 }
+

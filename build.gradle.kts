@@ -17,6 +17,7 @@ val detektVersion = libs.versions.detekt.get()
 allprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "io.gitlab.arturbosch.detekt")
+    apply(plugin = "maven-publish")
 
     detekt {
         toolVersion = detektVersion

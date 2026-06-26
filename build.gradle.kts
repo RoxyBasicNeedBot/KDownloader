@@ -32,6 +32,12 @@ allprojects {
     }
 
     plugins.withId("com.android.library") {
+        configure<com.android.build.gradle.LibraryExtension> {
+            publishing {
+                singleVariant("release")
+            }
+        }
+
         configure<org.gradle.api.publish.PublishingExtension> {
             publications {
                 create<org.gradle.api.publish.maven.MavenPublication>("release") {

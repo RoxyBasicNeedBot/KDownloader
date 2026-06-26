@@ -21,7 +21,12 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import com.roxybasicneedbot.kdownloader.core.model.DownloadRequest
 import com.roxybasicneedbot.kdownloader.core.model.DownloadState
+import com.roxybasicneedbot.kdownloader.core.model.DownloadProgress
+import com.roxybasicneedbot.kdownloader.core.model.DownloadResult
+import com.roxybasicneedbot.kdownloader.core.model.DownloadError
+import com.roxybasicneedbot.kdownloader.core.model.ErrorCode
 import com.roxybasicneedbot.kdownloader.desktop.KDownloaderDesktop
+import com.roxybasicneedbot.kdownloader.desktop.persistence.DownloadTaskEntity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID
@@ -183,3 +188,41 @@ fun DownloadItemCard(
         }
     }
 }
+
+val DownloadTaskEntity.state: DownloadState
+    get() = when (status.uppercase()) {
+        "QUEUED" -> DownloadState.Queued
+        "PAUSED" -> DownloadState.Paused
+        "DOWNLOADING" -> DownloadState.Downloading(
+            DownloadProgress(
+                downloadedBytes = downloadedBytes,
+                totalBytes = totalBytes,
+                percent = if (totalBytes > 0) ((downloadedBytes * 100) / totalBytes).toInt() else 0,
+                speedBytesPerSec = 0L,
+                speedFormatted = "0 KB/s",
+                etaSeconds = -1L,
+                etaFormatted = "N/A",
+                activeChunks = 1,
+                totalChunks = chunkCount,
+                chunkProgress = emptyList()
+            )
+        )
+        "COMPLETED", "DONE", "SUCCESS" -> DownloadState.Done(
+            DownloadResult(
+                id = id,
+                filePath = File(destinationDir, fileName).absolutePath,
+                totalBytes = totalBytes,
+                downloadTimeMs = 0L,
+                averageSpeedBytesPerSec = 0L,
+                hashVerified = false
+            )
+        )
+        "FAILED" -> DownloadState.Failed(
+            DownloadError(
+                code = ErrorCode.UNKNOWN,
+                message = errorMessage ?: "Unknown error"
+            ),
+            retryCount = 0
+        )
+        else -> DownloadState.Idle
+    }

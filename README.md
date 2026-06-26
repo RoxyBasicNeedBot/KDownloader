@@ -1,9 +1,27 @@
-# ⚡ KDownloader
+<p align="center">
+  <img src="kdownloader_banner.png" alt="KDownloader Banner" width="100%">
+</p>
 
-[![License](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](LICENSE)
-[![Build & Test](https://github.com/RoxyBasicNeedBot/KDownloader/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/RoxyBasicNeedBot/KDownloader/actions/workflows/build-and-test.yml)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-purple.svg)](https://kotlinlang.org)
-[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20C%23%20%7C%20Flutter%20%7C%20React%20Native-lightgrey.svg)](#)
+<p align="center">
+  <a href="https://github.com/RoxyBasicNeedBot/KDownloader/actions/workflows/build-and-test.yml">
+    <img src="https://github.com/RoxyBasicNeedBot/KDownloader/actions/workflows/build-and-test.yml/badge.svg" alt="Build & Verify">
+  </a>
+  <a href="https://jitpack.io/#RoxyBasicNeedBot/KDownloader">
+    <img src="https://jitpack.io/v/RoxyBasicNeedBot/KDownloader.svg" alt="JitPack Release">
+  </a>
+  <a href="https://www.npmjs.com/package/kdownloader-react-native">
+    <img src="https://img.shields.io/npm/v/kdownloader-react-native.svg?logo=npm&color=CB3837" alt="NPM Version">
+  </a>
+  <a href="https://pub.dev/packages/kdownloader_flutter">
+    <img src="https://img.shields.io/pub/v/kdownloader_flutter.svg?logo=dart&logoColor=white" alt="Pub.dev Version">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-BSD--3--Clause-blue.svg" alt="License">
+  </a>
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Desktop%20%7C%20C%23%20%7C%20Flutter%20%7C%20React%20Native-lightgrey.svg" alt="Platforms">
+</p>
+
+---
 
 A modern, Kotlin-first **cross-platform download engine** designed for maximum speed and reliability. Featuring multi-chunk parallel downloading, dynamic chunk splitting, mirror server support, token-bucket speed throttling, and WorkManager persistence.
 
@@ -25,55 +43,111 @@ Provides first-class, idiomatic SDKs for **Android, iOS/macOS (Swift), Desktop (
 
 ---
 
-## 🛠️ Module Architecture
+## 🛠️ Architecture
 
-```
-KDownloader/
-├── kdownloader-core/              → Shared KMP core logic (Pure Kotlin)
-├── kdownloader-android/           → Android platform (WorkManager + Room + Notifications)
-├── kdownloader-ios/               → iOS Swift SDK (URLSession + BGTaskScheduler + SKIE)
-├── kdownloader-desktop/           → Desktop JVM wrapper (SQLite + System Tray)
-├── kdownloader-hilt/              → Dagger Hilt integration
-├── kdownloader-compose/           → Jetpack Compose UI components
-├── kdownloader-swiftui/           → SwiftUI components
-├── kdownloader-dotnet/            → C# .NET NuGet package via P/Invoke
-├── kdownloader-flutter/           → Flutter/Dart plugin
-└── kdownloader-react-native/      → React Native bridge
+```mermaid
+graph TD
+    App[Consumer Application] --> API[Platform SDK / Wrapper]
+    
+    subgraph Wrappers [Platform Integrations]
+        API --> RN[React Native Wrapper]
+        API --> FL[Flutter Plugin]
+        API --> DN[.NET NuGet Package]
+        API --> COM[Compose / SwiftUI Components]
+    end
+
+    subgraph Core [KDownloader Core Engine]
+        RN --> CORE[kdownloader-core KMP]
+        FL --> CORE
+        DN --> CORE
+        COM --> CORE
+        CORE --> ENG[Download Engine]
+        CORE --> NET[HttpClientFactory]
+        CORE --> STO[PlatformFileStorage]
+    end
+
+    subgraph Storage & Network
+        ENG --> DB[(SQLite / Room DB)]
+        NET --> KTOR[Ktor Client]
+        STO --> OKIO[Okio File System]
+    end
+
+    style CORE fill:#7F52FF,stroke:#fff,stroke-width:2px,color:#fff
+    style ENG fill:#1976D2,stroke:#fff,stroke-width:1px,color:#fff
+    style DB fill:#388E3C,stroke:#fff,stroke-width:1px,color:#fff
 ```
 
 ---
 
-## 📦 Installation
+## 📦 Installation & Setup
 
-**Android / Desktop (Gradle)**
+### 1. Kotlin Multiplatform / JVM / Android (JitPack)
+
+Add the JitPack repository to your configuration:
+
 ```kotlin
-implementation("com.roxybasicneedbot.kdownloader:core:2.6.0")
-// Optional
-implementation("com.roxybasicneedbot.kdownloader:android:2.6.0")
-implementation("com.roxybasicneedbot.kdownloader:compose:2.6.0")
+// settings.gradle.kts or build.gradle.kts
+repositories {
+    mavenCentral()
+    maven { url = uri("https://jitpack.io") }
+}
 ```
 
-**iOS (Swift Package Manager)**
+Then add the dependency for the core engine or platform-specific wrappers:
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    // Pure Kotlin Multiplatform Core
+    implementation("com.github.RoxyBasicNeedBot.KDownloader:kdownloader-core:v3.2.2")
+
+    // Android Library (WorkManager, Notifications)
+    implementation("com.github.RoxyBasicNeedBot.KDownloader:kdownloader-android:v3.2.2")
+
+    // Compose Multiplatform UI components
+    implementation("com.github.RoxyBasicNeedBot.KDownloader:kdownloader-compose:v3.2.2")
+
+    // Dagger Hilt Integration
+    implementation("com.github.RoxyBasicNeedBot.KDownloader:kdownloader-hilt:v3.2.2")
+
+    // Desktop JVM Support
+    implementation("com.github.RoxyBasicNeedBot.KDownloader:kdownloader-desktop:v3.2.2")
+}
+```
+
+### 2. React Native (npm)
+
+Install the wrapper module directly from npm:
+
+```bash
+npm install kdownloader-react-native
+```
+
+### 3. Flutter (pub.dev)
+
+Add the plugin to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  kdownloader_flutter: ^2.2.0
+```
+
+### 4. iOS (Swift Package Manager)
+
+Add the package via Xcode or through your `Package.swift`:
+
 ```swift
 dependencies: [
-    .package(url: "https://github.com/RoxyBasicNeedBot/KDownloader.git", from: "2.6.0")
+    .package(url: "https://github.com/RoxyBasicNeedBot/KDownloader.git", from: "3.2.2")
 ]
 ```
 
-**.NET (NuGet)**
-```bash
-dotnet add package KDownloader.Net --version 2.6.0
-```
+### 5. C# (.NET NuGet)
 
-**Flutter (pub.dev)**
-```yaml
-dependencies:
-  kdownloader_flutter: ^2.6.0
-```
+Install the C# NuGet package:
 
-**React Native (npm)**
 ```bash
-npm install kdownloader-react-native
+dotnet add package KDownloader.Net --version 3.2.2
 ```
 
 ---
@@ -81,6 +155,7 @@ npm install kdownloader-react-native
 ## 💻 Idiomatic Usage Examples
 
 ### 🟣 Kotlin (Android / Desktop)
+
 ```kotlin
 val downloader = KDownloader.getInstance(context)
 
@@ -106,6 +181,7 @@ downloader.observe(id).collect { state ->
 ```
 
 ### 🍎 Swift (iOS / macOS)
+
 ```swift
 let downloader = KDownloader.shared
 
@@ -132,48 +208,8 @@ for await state in downloader.observe(id) {
 }
 ```
 
-### 🔷 C# (.NET)
-```csharp
-using KDownloader;
-
-var client = new KDownloaderClient();
-var id = await client.EnqueueAsync(new DownloadRequest 
-{
-    Url = "https://example.com/asset.pkg",
-    DestinationPath = @"C:\Downloads\",
-    FileName = "asset.pkg",
-    ChunkCount = 8
-});
-
-await foreach (var state in client.ObserveAsync(id)) 
-{
-    if (state is DownloadState.Downloading d) {
-        Console.WriteLine($"{d.Progress.Percent}% | {d.Progress.SpeedFormatted}");
-    }
-}
-```
-
-### 🐦 Dart (Flutter)
-```dart
-import 'package:kdownloader/kdownloader.dart';
-
-final downloader = KDownloader();
-final id = await downloader.enqueue(
-  'https://example.com/file.zip',
-  savePath: '/downloads/',
-  chunkCount: 4,
-);
-
-downloader.observe(id).listen((state) {
-  state.when(
-    downloading: (progress) => print('${progress.percent}%'),
-    done: (result) => print('Downloaded to: ${result.filePath}'),
-    failed: (error, _) => print('Error: $error'),
-  );
-});
-```
-
 ### ⚛️ React Native (TypeScript)
+
 ```typescript
 import KDownloader from 'kdownloader-react-native';
 
@@ -193,8 +229,33 @@ KDownloader.observe((states) => {
 });
 ```
 
+### 🐦 Dart (Flutter)
+
+```dart
+import 'package:kdownloader_flutter/kdownloader_flutter.dart';
+
+final downloader = KDownloaderFlutter();
+final id = await downloader.enqueue(
+  DownloadRequest(
+    url: 'https://example.com/file.zip',
+    destinationDir: '/downloads/',
+    fileName: 'file.zip',
+    chunkCount: 4,
+  )
+);
+
+downloader.observe(id).listen((state) {
+  if (state is Downloading) {
+    print('${state.progress.percent}%');
+  } else if (state is Done) {
+    print('Downloaded: ${state.result.filePath}');
+  }
+});
+```
+
 ---
 
 ## 📄 License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.
+
